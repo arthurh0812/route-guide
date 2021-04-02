@@ -1,0 +1,70 @@
+syntax = "proto3";
+package pb;
+
+option go_package = "grpc/routeguide/pb";
+
+service RouteGuide {
+  // A simple RPC
+
+  // obtains the feature at a given position
+  rpc GetFeature(Point) returns (Feature) {}
+
+
+  // A server-to-client streaming RPC
+
+  // obtains the features inside the given area, defined by the provided Area message
+  rpc ListFeatures(Area) returns (stream Feature) {}
+
+
+  // A client-to-server streaming RPC
+
+  // accepts a stream of Points, that together form a route. A summary about that route will be returned.
+  rpc CreateRoute(stream Point) returns (RouteSummary) {}
+
+
+  // A bi-directional streaming RPC
+
+  // accepts a stream of route notes that are being sent while a route is being traversed and also other route notes
+  // are being received
+  rpc RouteChat(stream RouteNote) returns (stream RouteNote) {}
+}
+
+// A Point represents a geographic point represented as a latitude-longitude pair.
+message Point {
+  int32 latitude = 1;
+  int32 longitude = 2;
+}
+
+// A Feature names a feature at a given geographic point.
+message Feature {
+  string name = 1;
+  // the point on earth where this Feature is detected
+  Point location = 2;
+}
+
+// An Area defines two diagonally opposite points, which are meant to declare the rectangular shape between them as a
+// certain area
+message Area {
+  Point top_left = 1;
+  Point bottom_right = 2;
+}
+
+// A RouteNote is simply a note to a route (= a connection of Points)
+message RouteNote {
+  // the location from where the message is being sent
+  Point location = 1;
+  // the message that needs to be transmitted
+  string message = 2;
+}
+
+// A general information bundle about a route (= a connection of Points)
+message RouteSummary {
+  // the number of points that make up to this route
+  int32 point_count = 1;
+  // the number of known features that are passed while traversing the route.
+  int32 feature_count = 2;
+  // the total distance, covered in meters
+  int32 total_distance = 3;
+  // the elapsed time during traversal, covered in seconds
+  float elapsed_time = 4;
+}
